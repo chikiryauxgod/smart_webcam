@@ -11,14 +11,14 @@
 #include <boost/asio/ssl.hpp>
 
 using boost::asio::ip::tcp;
-using ssl = boost::asio::ssl;
+namespace ssl = boost::asio::ssl;
 
 
 class Server
 {
 public:
 
-	Server(boost::asio::asio::io_context& io, unsigned short port, ssl::context& ssl);
+	Server(boost::asio::io_context& io, unsigned short port, ssl::context& ssl);
 	void run();
 
 private:

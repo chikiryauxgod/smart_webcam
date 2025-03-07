@@ -4,9 +4,9 @@
 #include <vector>
 #include <thread>
 #include <chrono>
-// #include <opencv4/opencv2/opencv.hpp>
 #include <nlohmann/json.hpp>
-#include <opencv2/opencv.hpp>
+#include <opencv4/opencv2/opencv.hpp> // couldn't find the way to lib
+
 using json = nlohmann::json;
 
 class Session : public std::enable_shared_from_this<Session>
