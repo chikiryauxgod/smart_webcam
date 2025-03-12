@@ -1,3 +1,6 @@
+// 12.03.2025
+
+
 #include "server.hpp"
 #include <iostream>
 #include <memory>
@@ -7,7 +10,9 @@
 #include <nlohmann/json.hpp>
 #include <opencv4/opencv2/opencv.hpp> // couldn't find the way to lib
 
+
 using json = nlohmann::json;
+
 
 class Session : public std::enable_shared_from_this<Session>
 {
