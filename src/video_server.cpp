@@ -1,28 +1,25 @@
-#include "videoServer.h"
-#include <thread>
+#include "video_server.hpp"
+#include <opencv2/opencv.hpp>
+
+using namespace cv;
+using namespace grpc;
+using namespace result_service;
 
 Status VideoServerService::StreamVideo(ServerContext* context, ServerReaderWriter<Result, Frame>* stream) {
     Frame frame;
-    VideoCapture cap(0);
+    VideoCapture cap(0); // Открываем веб-камеру
     if (!cap.isOpened()) {
-        return Status(StatusCode::INTERNAL, "Cannot open camera");
+        return Status(StatusCode::INTERNAL, "Failed to open webcam");
     }
 
-    Mat image;
-    while (cap.read(image) && !context->IsCancelled()) {
-        std::vector<uchar> buffer;
-        imencode(".jpg", image, buffer);
+    while (stream->Read(&frame)) {
+        Mat img(frame.height(), frame.width(), CV_8UC3);
+        memcpy(img.data, frame.image_data().data(), frame.image_data().size());
 
-        frame.set_image_data(buffer.data(), buffer.size());
-        frame.set_width(image.cols);
-        frame.set_height(image.rows);
-        frame.set_channels(image.channels());
-
-        if (!stream->Write(frame)) {
-            break;
-        }
-
-        waitKey(33); // ~30 FPS
+        // Обработка кадра (здесь можно добавить логику)
+        Result result;
+        result.add_detections()->set_data("Processed frame");
+        stream->Write(result); // Отправляем Result
     }
 
     return Status::OK;

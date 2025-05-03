@@ -1,5 +1,5 @@
-#ifndef VIDEO_SERVER_H
-#define VIDEO_SERVER_H
+#ifndef VIDEO_SERVER_HPP
+#define VIDEO_SERVER_HPP
 
 #include <opencv4/opencv2/opencv.hpp>
 
@@ -30,4 +30,4 @@ public:
     void Stop();
 };
 
-#endif // VIDEO_SERVER_H
+#endif // VIDEO_SERVER_HPP
