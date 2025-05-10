@@ -16,7 +16,7 @@ Status VideoServerService::StreamVideo(ServerContext* context, ServerReaderWrite
         Mat img(frame.height(), frame.width(), CV_8UC3);
         memcpy(img.data, frame.image_data().data(), frame.image_data().size());
 
-        // Обработка кадра (здесь можно добавить логику)
+        
         Result result;
         result.add_detections()->set_data("Processed frame");
         stream->Write(result); // Отправляем Result

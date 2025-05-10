@@ -2,7 +2,7 @@
 #include <string>
 
 int main() {
-    video_processor::VideoClient client("localhost:50052", "localhost:50051");
+    VideoClient client("localhost:50052", "localhost:50051");
     client.Start();
     return 0;
 }

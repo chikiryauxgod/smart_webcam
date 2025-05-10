@@ -10,13 +10,13 @@ Status VideoClientService::ProcessVideo(ServerContext* context, ServerReaderWrit
 
     Frame frame;
     while (stream->Read(&frame)) {
-        ai_stream->Write(frame); // Отправляем Frame на AI-сервер
+        ai_stream->Write(frame); 
     }
     ai_stream->WritesDone();
 
     Result result;
     while (ai_stream->Read(&result)) {
-        stream->Write(result); // Пересылаем Result клиенту
+        stream->Write(result); 
     }
 
     Status status = ai_stream->Finish();
