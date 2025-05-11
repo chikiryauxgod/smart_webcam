@@ -19,7 +19,7 @@ private:
 
 public:
     VideoClientService(const std::string& ai_server_address);
-    Status StreamVideo(ServerContext* context, ServerReaderWriter<Result, Frame>* stream) override;
+    Status StreamVideo(ServerContext* context, ServerReaderWriter<result_service::Result, result_service::Frame>* stream) override;
 };
 
 class VideoClient {

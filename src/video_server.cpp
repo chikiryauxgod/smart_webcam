@@ -18,7 +18,7 @@ Status VideoServerService::StreamVideo(ServerContext* context, ServerReaderWrite
 
         
         Result result;
-        result.add_detections()->set_data("Processed frame");
+        result.set_data("Processed frame");
         stream->Write(result); // Отправляем Result
     }
 

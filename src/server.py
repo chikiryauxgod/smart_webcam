@@ -3,8 +3,9 @@ from concurrent import futures
 import numpy as np
 import cv2
 from ultralytics import YOLO
-import video_processor_pb2
-import video_processor_pb2_grpc
+
+from generated.proto import video_processor_pb2
+from generated.proto import video_processor_pb2_grpc
 
 class YOLOModel:
     def __init__(self, model_path="yolov8n.pt"):
