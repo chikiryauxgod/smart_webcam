@@ -4,18 +4,27 @@
 VideoClientService::VideoClientService(const std::string& ai_server_address)
     : ai_stub_(VideoProcessor::NewStub(CreateChannel(ai_server_address, InsecureChannelCredentials()))) {}
 
-Status VideoClientService::ProcessVideo(ServerContext* context, ServerReaderWriter<Result, Frame>* stream) {
+Status VideoClientService::StreamVideo(ServerContext* context, ServerReaderWriter<result_service::Result, result_service::Frame>* stream) {
     ClientContext ai_context;
-    std::unique_ptr<ClientReaderWriter<Frame, Result>> ai_stream(ai_stub_->ProcessVideo(&ai_context));
+    std::unique_ptr<ClientReaderWriter<video_processor::Frame, video_processor::Result>> ai_stream(ai_stub_->ProcessVideo(&ai_context));
 
-    Frame frame;
+    result_service::Frame frame;
+    video_processor::Frame ai_frame;
     while (stream->Read(&frame)) {
-        ai_stream->Write(frame); 
+        // Copy from result_service::Frame to video_processor::Frame
+        ai_frame.set_image_data(frame.image_data());
+        ai_frame.set_width(frame.width());
+        ai_frame.set_height(frame.height());
+        ai_frame.set_channels(frame.channels());
+        ai_stream->Write(ai_frame); 
     }
     ai_stream->WritesDone();
 
-    Result result;
-    while (ai_stream->Read(&result)) {
+    video_processor::Result ai_result;
+    result_service::Result result;
+    while (ai_stream->Read(&ai_result)) {
+        // Copy from video_processor::Result to result_service::Result
+        result.set_data(ai_result.data());
         stream->Write(result); 
     }
 
