@@ -1,64 +1,70 @@
-
 cmake_minimum_required(VERSION 3.10)
 project(smart_webcam LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_PREFIX_PATH "$ENV{HOME}/.local" ${CMAKE_PREFIX_PATH})
+set(Protobuf_PROTOC_EXECUTABLE "$ENV{HOME}/.local/bin/protoc")
 
 
-find_package(gRPC REQUIRED)
+# protobuf & grpc
+set(Protobuf_PROTOC_EXECUTABLE /usr/bin/protoc)
+set(Protobuf_USE_STATIC_LIBS OFF)
 find_package(Protobuf REQUIRED)
+find_package(gRPC CONFIG REQUIRED)
 find_package(OpenCV REQUIRED)
 
 
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
-include_directories(${CMAKE_CURRENT_BINARY_DIR}/generated/proto)
-include_directories(${OpenCV_INCLUDE_DIRS})
+# debug
+message(STATUS "Using protoc: ${Protobuf_PROTOC_EXECUTABLE}")
+find_program(GRPC_CPP_PLUGIN grpc_cpp_plugin HINTS /usr/bin)
+message(STATUS "Using grpc_cpp_plugin: ${GRPC_CPP_PLUGIN}")
 
-
-set(PROTO_FILES
-    ${CMAKE_CURRENT_SOURCE_DIR}/proto/result_service.proto
-    ${CMAKE_CURRENT_SOURCE_DIR}/proto/video_processor.proto
+# include dirs
+include_directories(
+  ${CMAKE_CURRENT_SOURCE_DIR}/include
+  ${CMAKE_CURRENT_SOURCE_DIR}/generated/proto
+  ${OpenCV_INCLUDE_DIRS}
 )
 
-set(PROTO_SRC_DIR ${CMAKE_CURRENT_BINARY_DIR}/generated/proto)
-file(MAKE_DIRECTORY ${PROTO_SRC_DIR})
-
-protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS ${PROTO_SRC_DIR} ${PROTO_FILES})
-grpc_generate_cpp(GRPC_SRCS GRPC_HDRS ${PROTO_SRC_DIR} ${PROTO_FILES})
-
-
-add_library(proto_lib STATIC
-    ${PROTO_SRCS}
-    ${PROTO_HDRS}
-    ${GRPC_SRCS}
-    ${GRPC_HDRS}
+# proto_lib
+set(PROTO_SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/generated/proto)
+set(PROTO_SRCS
+  ${PROTO_SRC_DIR}/result_service.pb.cc
+  ${PROTO_SRC_DIR}/result_service.grpc.pb.cc
+  ${PROTO_SRC_DIR}/video_processor.pb.cc
+  ${PROTO_SRC_DIR}/video_processor.grpc.pb.cc
 )
+
+add_library(proto_lib STATIC ${PROTO_SRCS})
 target_link_libraries(proto_lib
-    gRPC::grpc++
+  PUBLIC
+    gRPC::grpc++       
     protobuf::libprotobuf
 )
 
-
-add_executable(video_server
-    src/video_server.cpp
-)
-add_executable(video_client
-    src/video_client.cpp
-)
-
-target_link_libraries(video_server
+add_library(video_server_lib src/video_server.cpp)
+target_link_libraries(video_server_lib
+  PUBLIC
     proto_lib
-    gRPC::grpc++
-    protobuf::libprotobuf
-    ${OpenCV_LIBS}
-)
-target_link_libraries(video_client
-    proto_lib
-    gRPC::grpc++
-    protobuf::libprotobuf
     ${OpenCV_LIBS}
 )
 
-add_dependencies(video_server proto_lib)
-add_dependencies(video_client proto_lib)
+add_library(video_client_lib src/video_client.cpp)
+target_link_libraries(video_client_lib
+  PUBLIC
+    proto_lib
+    ${OpenCV_LIBS}
+)
+
+add_executable(main_video_server src/main_video_server.cpp)
+target_link_libraries(main_video_server
+  PRIVATE
+    video_server_lib
+)
+
+add_executable(main_video_client src/main_video_client.cpp)
+target_link_libraries(main_video_client
+  PRIVATE
+    video_client_lib
+)

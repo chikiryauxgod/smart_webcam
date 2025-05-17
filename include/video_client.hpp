@@ -5,31 +5,34 @@
 #include "video_processor.grpc.pb.h"
 #include "result_service.grpc.pb.h"
 
-using namespace grpc;
-
+using grpc::ServerContext;
+using grpc::ServerReaderWriter;
+using grpc::Status;
 using video_processor::VideoProcessor;
-using video_processor::Frame;
-using video_processor::Result;
+using result_service::Frame;
+using result_service::Result;
 using result_service::VideoStream;
 
-class VideoClientService final : public VideoStream::Service {
+class VideoClientService final : public VideoStream::Service 
+{
 private:
     std::unique_ptr<VideoProcessor::Stub> ai_stub_;
     void ForwardResults(ServerReaderWriter<Result, Frame>* stream);
 
 public:
-    VideoClientService(const std::string& ai_server_address);
-    Status StreamVideo(ServerContext* context, ServerReaderWriter<result_service::Result, result_service::Frame>* stream) override;
+    explicit VideoClientService(std::string_view ai_server_address); 
+    Status StreamVideo(ServerContext* context, ServerReaderWriter<Result, Frame>* stream) override;
 };
 
-class VideoClient {
+class VideoClient 
+{
 private:
-    std::unique_ptr<Server> server_;
+    std::unique_ptr<grpc::Server> server_;
     std::unique_ptr<result_service::VideoStream::Stub> video_stub_;
     bool is_running_;
 
 public:
-    VideoClient(const std::string& server_address, const std::string& video_server_address);
+    explicit VideoClient(std::string_view server_address, std::string_view video_server_address); 
     ~VideoClient();
     void Start();
     void Stop();

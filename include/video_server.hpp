@@ -2,32 +2,32 @@
 #define VIDEO_SERVER_HPP
 
 #include <opencv4/opencv2/opencv.hpp>
-
 #include <grpcpp/grpcpp.h>
 #include "result_service.grpc.pb.h"
 
 using namespace cv;
 using namespace grpc;
-using result_service::VideoStream;
-using result_service::Frame;
-using result_service::Result;
 
-class VideoServerService final : public VideoStream::Service {
+class VideoServerService final : public ::result_service::VideoStream::Service {
 public:
-    Status StreamVideo(ServerContext* context, ServerReaderWriter<Result, Frame>* stream) override;
+    ::grpc::Status StreamVideo(::grpc::ServerContext* context, 
+                               ::grpc::ServerReaderWriter<::result_service::Result, ::result_service::Frame>* stream) override;
 };
 
-class VideoServer {
+class VideoServer
+ {
 private:
     std::unique_ptr<Server> server_;
     VideoCapture cap_;
     bool is_running_;
+    std::string address_;
 
 public:
-    VideoServer(const std::string& address);
+    explicit VideoServer(const std::string_view address);
     ~VideoServer();
     void Start();
     void Stop();
+    void Wait();
 };
 
 #endif // VIDEO_SERVER_HPP
