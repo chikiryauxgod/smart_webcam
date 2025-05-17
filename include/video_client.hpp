@@ -17,7 +17,7 @@ class VideoClientService final : public VideoStream::Service {
 private:
     std::unique_ptr<VideoProcessor::Stub> ai_stub_;
     void ForwardResults(ServerReaderWriter<Result, Frame>* stream);
-    ServerContext* context_ = nullptr; // Поле для хранения контекста
+    ServerContext* context_ = nullptr;
 
 public:
     explicit VideoClientService(std::string_view ai_server_address);
@@ -26,12 +26,11 @@ public:
 
 class VideoClient {
 private:
-    std::unique_ptr<grpc::Server> server_;
-    std::unique_ptr<result_service::VideoStream::Stub> video_stub_;
+    std::unique_ptr<result_service::VideoStream::Stub> video_stub_; // Только для клиентской логики
     bool is_running_;
 
 public:
-    explicit VideoClient(std::string_view server_address, std::string_view video_server_address);
+    explicit VideoClient(std::string_view video_server_address); // Убираем server_address, так как клиент не сервер
     ~VideoClient();
     void Start();
     void Stop();
