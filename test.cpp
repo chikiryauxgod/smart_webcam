@@ -17,8 +17,8 @@ int main() {
     cv::namedWindow(windowName, cv::WINDOW_NORMAL); // Разрешаем менять размер окна
 
     // Попробуем установить более низкое разрешение
-    cap.set(cv::CAP_PROP_FRAME_WIDTH, 640);
-    cap.set(cv::CAP_PROP_FRAME_HEIGHT, 480);
+    cap.set(cv::CAP_PROP_FRAME_WIDTH, 1920);
+    cap.set(cv::CAP_PROP_FRAME_HEIGHT, 1080);
 
     while (true) {
         cap >> frame;

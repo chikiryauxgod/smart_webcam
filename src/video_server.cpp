@@ -8,11 +8,6 @@ using namespace result_service;
 
 Status VideoServerService::StreamVideo(ServerContext* context, ServerReaderWriter<result_service::Result, result_service::Frame>* stream) 
 {
-    VideoCapture cap(0);
-    if (!cap.isOpened()) {
-        return Status(StatusCode::INTERNAL, "Failed to open webcam");
-    }
-
     result_service::Frame frame;
     while (stream->Read(&frame)) 
     {
@@ -40,7 +35,7 @@ Status VideoServerService::StreamVideo(ServerContext* context, ServerReaderWrite
 VideoServer::VideoServer(std::string_view address) : address_(std::string(address)), is_running_(false) {}
 
 void VideoServer::Start()
- {
+{
     if (is_running_) {
         std::cerr << "Server already running" << std::endl;
         return;
