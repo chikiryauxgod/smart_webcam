@@ -6,14 +6,12 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_PREFIX_PATH "$ENV{HOME}/.local" ${CMAKE_PREFIX_PATH})
 set(Protobuf_PROTOC_EXECUTABLE "$ENV{HOME}/.local/bin/protoc")
 
-
 # protobuf & grpc
 set(Protobuf_PROTOC_EXECUTABLE /usr/bin/protoc)
 set(Protobuf_USE_STATIC_LIBS OFF)
 find_package(Protobuf REQUIRED)
 find_package(gRPC CONFIG REQUIRED)
 find_package(OpenCV REQUIRED)
-
 
 # debug
 message(STATUS "Using protoc: ${Protobuf_PROTOC_EXECUTABLE}")
@@ -43,6 +41,7 @@ target_link_libraries(proto_lib
     protobuf::libprotobuf
 )
 
+# video_server_lib
 add_library(video_server_lib src/video_server.cpp)
 target_link_libraries(video_server_lib
   PUBLIC
@@ -50,6 +49,7 @@ target_link_libraries(video_server_lib
     ${OpenCV_LIBS}
 )
 
+# video_client_lib
 add_library(video_client_lib src/video_client.cpp)
 target_link_libraries(video_client_lib
   PUBLIC
@@ -57,6 +57,7 @@ target_link_libraries(video_client_lib
     ${OpenCV_LIBS}
 )
 
+# main executables
 add_executable(main_video_server src/main_video_server.cpp)
 target_link_libraries(main_video_server
   PRIVATE
@@ -67,4 +68,26 @@ add_executable(main_video_client src/main_video_client.cpp)
 target_link_libraries(main_video_client
   PRIVATE
     video_client_lib
+)
+
+find_package(TgBot REQUIRED)
+find_package(CURL REQUIRED)
+find_package(Boost REQUIRED COMPONENTS system)
+
+add_executable(main_telegram_bot
+  src/main_telegram_bot.cpp
+  src/telegram_bot.cpp
+)
+
+
+target_include_directories(main_telegram_bot PRIVATE ${TGBOT_INCLUDE_DIRS})
+target_link_libraries(main_telegram_bot
+  PRIVATE
+    video_client_lib
+    ${OpenCV_LIBS}
+    gRPC::grpc++
+    TgBot::TgBot
+    CURL::libcurl
+    Boost::system
+    Threads::Threads
 )

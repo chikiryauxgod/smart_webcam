@@ -4,6 +4,7 @@
 #include <opencv4/opencv2/opencv.hpp>
 #include <grpcpp/grpcpp.h>
 #include "result_service.grpc.pb.h"
+#include "video_processor.grpc.pb.h"
 
 using namespace cv;
 using namespace grpc;
