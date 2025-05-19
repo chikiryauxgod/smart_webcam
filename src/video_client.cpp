@@ -23,7 +23,8 @@ VideoClientService::VideoClientService(std::string_view ai_server_address)
 void VideoClientService::ForwardResults(ServerReaderWriter<Result, Frame>* stream)
 {
     Frame frame;
-    while (running && stream->Read(&frame)) {
+    while (running && stream->Read(&frame)) 
+    {
         if (context_ && context_->IsCancelled()) {
             return;
         }
@@ -63,7 +64,8 @@ void VideoClient::Start()
 
 void VideoClient::Stop() 
 {
-    if (is_running_) {
+    if (is_running_)
+     {
         running = false;
         is_running_ = false;
         std::cout << "Video client stopped" << std::endl;
@@ -85,7 +87,8 @@ void VideoClient::StreamVideo()
 
     ClientReaderWriter<Frame, Result>* raw_stream = stream.get();
 
-    std::thread writer([raw_stream, &cap]() {
+    std::thread writer([raw_stream, &cap]() 
+    {
         Mat frame;
         while (running && cap.read(frame)) 
         {

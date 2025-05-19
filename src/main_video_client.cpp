@@ -1,6 +1,7 @@
 #include "video_client.hpp"
 
-int main() {
+int main() 
+{
     VideoClient client("localhost:50051");
     client.Start();
     client.StreamVideo();

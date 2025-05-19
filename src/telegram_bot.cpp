@@ -12,10 +12,9 @@ TelegramBot::~TelegramBot() {
     Stop();
 }
 
-void TelegramBot::Start()
- {
-    if (!is_running_)
-     {
+void TelegramBot::Start() 
+{
+    if (!is_running_) {
         is_running_ = true;
         std::thread result_thread(&TelegramBot::ReceiveResults, this);
         result_thread.detach();
@@ -25,27 +24,26 @@ void TelegramBot::Start()
 
 void TelegramBot::Stop() 
 {
-    if (is_running_)
-     {
+    if (is_running_) {
         is_running_ = false;
         std::cout << "Telegram bot stopped" << std::endl;
     }
 }
 
-void TelegramBot::ReceiveResults()
- {
+void TelegramBot::ReceiveResults() 
+{
     ClientContext context;
+    Frame dummy_frame;
     std::unique_ptr<ClientReaderWriter<Frame, Result>> stream(stub_->StreamVideo(&context));
 
-    Frame dummy_frame; // Telegram bot doesn't send frames, just receives results
-    stream->Write(dummy_frame); // Initiate stream
+    stream->Write(dummy_frame);
     stream->WritesDone();
 
     Result result;
-    while (stream->Read(&result) && is_running_) 
+    while (stream->Read(&result) && is_running_)
     {
         try {
-            bot_.getApi().sendMessage(chat_id_, "Result: " + result.data());
+            bot_.getApi().sendMessage(chat_id_, result.data());
         } catch (const std::exception& e) {
             std::cerr << "Telegram error: " << e.what() << std::endl;
         }

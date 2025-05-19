@@ -10,7 +10,8 @@ using result_service::VideoStream;
 using result_service::Frame;
 using result_service::Result;
 
-class TelegramBot {
+class TelegramBot 
+{
 private:
     Bot bot_;
     int64_t chat_id_;

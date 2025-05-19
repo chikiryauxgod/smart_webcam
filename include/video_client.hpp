@@ -13,7 +13,8 @@ using result_service::Frame;
 using result_service::Result;
 using result_service::VideoStream;
 
-class VideoClientService final : public VideoStream::Service {
+class VideoClientService final : public VideoStream::Service 
+{
 private:
     std::unique_ptr<VideoProcessor::Stub> ai_stub_;
     void ForwardResults(ServerReaderWriter<Result, Frame>* stream);
@@ -25,12 +26,13 @@ public:
 };
 
 class VideoClient {
+    
 private:
-    std::unique_ptr<result_service::VideoStream::Stub> video_stub_; // Только для клиентской логики
+    std::unique_ptr<result_service::VideoStream::Stub> video_stub_; 
     bool is_running_;
 
 public:
-    explicit VideoClient(std::string_view video_server_address); // Убираем server_address, так как клиент не сервер
+    explicit VideoClient(std::string_view video_server_address); 
     ~VideoClient();
     void Start();
     void Stop();
