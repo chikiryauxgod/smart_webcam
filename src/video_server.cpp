@@ -12,12 +12,13 @@
 
 using namespace cv;
 using namespace grpc;
-using namespace result_service; // Для взаимодействия с C++ клиентами
-using namespace video_processor; // Для взаимодействия с Python-сервером
+using namespace result_service; 
+using namespace video_processor; 
 
 std::atomic<bool> running(true);
 
-void signal_handler(int signal) {
+void signal_handler(int signal) 
+{
     if (signal == SIGINT) {
         running = false;
     }
@@ -25,10 +26,12 @@ void signal_handler(int signal) {
 
 class PythonProcess {
 public:
-    PythonProcess(const std::string& port) {
+    PythonProcess(const std::string& port) 
+    {
         std::string python_port = port;
         pid_t pid = fork();
-        if (pid == 0) {
+        if (pid == 0) 
+        {
             execlp("python3", "python3", "server.py", python_port.c_str(), nullptr);
             std::cerr << "Failed to start Python process on port " << python_port << std::endl;
             exit(1);

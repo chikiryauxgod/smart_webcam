@@ -1,25 +1,28 @@
+import os
+import sys
+
+ROOT = os.path.dirname(__file__)
+sys.path.insert(0, os.path.join(ROOT, "generated", "proto"))
+
 import grpc
 from concurrent import futures
 import numpy as np
 import cv2
 from ultralytics import YOLO
-import time
-import sys
 
-from generated.proto import video_processor_pb2
-from generated.proto import video_processor_pb2_grpc
+import video_processor_pb2
+import video_processor_pb2_grpc
+
 
 class YOLOModel:
     def __init__(self, model_path="yolov8n.pt"):
         self.model = YOLO(model_path)
-        self.unknown_start_time = None
-        self.unknown_duration_threshold = 5  # 5 seconds to approve a stranger
 
     def process(self, image):
         image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         results = self.model(image_rgb)
         detections = []
-        has_unknown_person = False
+        has_unknown = False
 
         for result in results:
             for box in result.boxes:
@@ -28,50 +31,54 @@ class YOLOModel:
                 cls = int(box.cls)
                 label = result.names[cls]
                 if label == "person":
-                    has_unknown_person = True
-                    detections.append(f"Detected a stranger: [{x1}, {y1}, {x2}, {y2}] ({conf:.2f})")
+                    has_unknown = True
+                    detections.append(f"[{x1},{y1},{x2},{y2}]({conf:.2f})")
 
-        return detections, has_unknown_person
+        return detections, has_unknown
 
-    def track_unknown(self, has_unknown_person):
-        current_time = time.time()
-        if has_unknown_person:
-            if self.unknown_start_time is None:
-                self.unknown_start_time = current_time
-            elif current_time - self.unknown_start_time >= self.unknown_duration_threshold:
-                return True
-        else:
-            self.unknown_start_time = None
-        return False
 
-class VideoProcessorServicer(video_processor_pb2_grpc.VideoStreamServicer):
+import time  # в начало
+
+class VideoProcessorServicer(video_processor_pb2_grpc.VideoProcessorServicer):
     def __init__(self):
-        self.ai_model = YOLOModel()
+        self.ai = YOLOModel()
+        self.last_alert_time = 0
 
-    def StreamVideo(self, request_iterator, context):
+    def ProcessVideo(self, request_iterator, context):
         for frame in request_iterator:
-            image_array = np.frombuffer(frame.image_data, dtype=np.uint8)
-            image = image_array.reshape(frame.height, frame.width, 3)
-            if image is None:
+            if frame.width == 0 or frame.height == 0:
                 continue
 
-            detections, has_unknown_person = self.ai_model.process(image)
-            if self.ai_model.track_unknown(has_unknown_person):
-                result = video_processor_pb2.Result(data="Detected a stranger: " + ", ".join(detections))
-                yield result
-                time.sleep(5)  
+            try:
+                img = np.frombuffer(frame.image_data, dtype=np.uint8) \
+                         .reshape(frame.height, frame.width, 3)
+            except Exception:
+                continue
+
+            detections, has_unknown = self.ai.process(img)
+
+            now = time.time()
+            if has_unknown and now - self.last_alert_time > 5:
+                msg = "Detected stranger: " + ", ".join(detections)
+                print(msg)
+                self.last_alert_time = now
+                yield video_processor_pb2.Result(data=msg)
+
+
 
 def serve(port):
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
-    video_processor_pb2_grpc.add_VideoStreamServicer_to_server(VideoProcessorServicer(), server)
-    server.add_insecure_port(f'[::]:{port}')
+    video_processor_pb2_grpc.add_VideoProcessorServicer_to_server(
+        VideoProcessorServicer(), server
+    )
+    server.add_insecure_port(f"[::]:{port}")
     print(f"Python server started on port {port}")
     server.start()
-    server.wait_for_termination()  
+    server.wait_for_termination()
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     if len(sys.argv) != 2:
         print("Usage: python server.py <port>")
         sys.exit(1)
-    port = sys.argv[1]
-    serve(port)
+    serve(sys.argv[1])
