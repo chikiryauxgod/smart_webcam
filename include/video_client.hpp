@@ -17,12 +17,12 @@ class VideoClientService final : public VideoStream::Service
 {
 private:
     std::unique_ptr<VideoProcessor::Stub> ai_stub_;
-    void ForwardResults(ServerReaderWriter<Result, Frame>* stream);
-    ServerContext* context_ = nullptr;
+    void ForwardResults(ServerReaderWriter<Result, Frame> * stream);
+    ServerContext * context_ = nullptr;
 
 public:
     explicit VideoClientService(std::string_view ai_server_address);
-    Status StreamVideo(ServerContext* context, ServerReaderWriter<Result, Frame>* stream) override;
+    Status StreamVideo(ServerContext * context, ServerReaderWriter<Result, Frame> * stream) override;
 };
 
 class VideoClient {

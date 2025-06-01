@@ -11,12 +11,12 @@ using namespace grpc;
 
 class VideoServerService final : public ::result_service::VideoStream::Service {
 public:
-    ::grpc::Status StreamVideo(::grpc::ServerContext* context, 
-                               ::grpc::ServerReaderWriter<::result_service::Result, ::result_service::Frame>* stream) override;
+    ::grpc::Status StreamVideo(::grpc::ServerContext * context, 
+    ::grpc::ServerReaderWriter<::result_service::Result, ::result_service::Frame> * stream) override;
 };
 
 class VideoServer
- {
+{
 private:
     std::unique_ptr<Server> server_;
     VideoCapture cap_;

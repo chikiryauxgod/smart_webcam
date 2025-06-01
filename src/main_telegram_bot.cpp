@@ -12,8 +12,7 @@ void signal_handler(int sig) {
     if (sig == SIGINT) running = false;
 }
 
-std::string get_env(const char* var)
- {
+std::string get_env(const char * var) {
     const char* v = std::getenv(var);
     if (!v) {
         std::cerr << "Env var " << var << " not set\n";
@@ -25,9 +24,9 @@ std::string get_env(const char* var)
 int main() {
     std::signal(SIGINT, signal_handler);
 
-    std::string token   = get_env("TG_SMART_TOKEN");
-    int64_t     chat_id = std::stoll(get_env("TG_CHAT_ID"));
-    std::string srv     = "localhost:50051";
+    std::string token = get_env("TG_SMART_TOKEN");
+    int64_t chat_id = std::stoll(get_env("TG_CHAT_ID"));
+    std::string srv = "localhost:50051";
 
     TelegramBot bot(token, chat_id, srv);
     bot.Start();

@@ -10,9 +10,7 @@
 class TelegramBot 
 {
 public:
-    TelegramBot(const std::string& token,
-                int64_t chat_id,
-                const std::string& server_address);
+    TelegramBot(const std::string & token, int64_t chat_id, const std::string & server_address);
     ~TelegramBot();
 
     void Start();
