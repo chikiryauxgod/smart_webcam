@@ -12,6 +12,7 @@ from ultralytics import YOLO
 
 import video_processor_pb2
 import video_processor_pb2_grpc
+import time
 
 
 class YOLOModel:
@@ -36,8 +37,6 @@ class YOLOModel:
 
         return detections, has_unknown
 
-
-import time  # в начало
 
 class VideoProcessorServicer(video_processor_pb2_grpc.VideoProcessorServicer):
     def __init__(self):
