@@ -9,11 +9,10 @@ from concurrent import futures
 import numpy as np
 import cv2
 from ultralytics import YOLO
+import time
 
 import video_processor_pb2
 import video_processor_pb2_grpc
-import time
-
 
 class YOLOModel:
     def __init__(self, model_path="yolov8n.pt"):
@@ -35,8 +34,7 @@ class YOLOModel:
                     has_unknown = True
                     detections.append(f"[{x1},{y1},{x2},{y2}]({conf:.2f})")
 
-        return detections, has_unknown
-
+        return detections, has_unknown, results  
 
 class VideoProcessorServicer(video_processor_pb2_grpc.VideoProcessorServicer):
     def __init__(self):
@@ -49,12 +47,28 @@ class VideoProcessorServicer(video_processor_pb2_grpc.VideoProcessorServicer):
                 continue
 
             try:
-                img = np.frombuffer(frame.image_data, dtype=np.uint8) \
-                         .reshape(frame.height, frame.width, 3)
+                img = np.frombuffer(frame.image_data, dtype=np.uint8).reshape(frame.height, frame.width, 3)
             except Exception:
                 continue
 
-            detections, has_unknown = self.ai.process(img)
+            detections, has_unknown, results = self.ai.process(img)
+
+            
+            display_img = img.copy()
+
+            for result in results:
+                for box in result.boxes:
+                    x1, y1, x2, y2 = map(int, box.xyxy[0])
+                    conf = float(box.conf)
+                    cls = int(box.cls)
+                    label = result.names[cls]
+                    color = (0, 255, 0) if label == "person" else (0, 0, 255)  
+                    cv2.rectangle(display_img, (x1, y1), (x2, y2), color, 2)
+                    cv2.putText(display_img, f"{label} {conf:.2f}", (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
+
+            cv2.imshow("YOLO Detection", display_img)
+            if cv2.waitKey(1) & 0xFF == ord('q'):  
+                break
 
             now = time.time()
             if has_unknown and now - self.last_alert_time > 5:
@@ -63,7 +77,7 @@ class VideoProcessorServicer(video_processor_pb2_grpc.VideoProcessorServicer):
                 self.last_alert_time = now
                 yield video_processor_pb2.Result(data=msg)
 
-
+        cv2.destroyAllWindows()  
 
 def serve(port):
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
@@ -74,7 +88,6 @@ def serve(port):
     print(f"Python server started on port {port}")
     server.start()
     server.wait_for_termination()
-
 
 if __name__ == "__main__":
     if len(sys.argv) != 2:
